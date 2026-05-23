@@ -1,0 +1,57 @@
+# ── Python artifacts ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Secrets — NEVER in the image ─────────────────────────────────────────────
+.env
+.env.*
+!.env.example          # keep the example for reference
+
+# ── Data (mounted as volumes in production) ───────────────────────────────────
+data/
+*.pdf
+*.xlsx
+*.csv
+
+# ── Git ───────────────────────────────────────────────────────────────────────
+.git/
+.gitignore
+.gitattributes
+
+# ── IDE & OS ─────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+
+# ── Tests ────────────────────────────────────────────────────────────────────
+tests/
+pytest.ini
+.pytest_cache/
+htmlcov/
+.coverage
+
+# ── Documentation ────────────────────────────────────────────────────────────
+*.md
+docs/
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+*.ipynb
+.ipynb_checkpoints/
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/

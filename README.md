@@ -1,391 +1,278 @@
-ARIRAS
-AI Regulatory Intelligence & Reporting Assurance System
-Hosted on Streamlit
-Overview
+# ARIRAS API — Day 2: Production Upgrade
 
-ARIRAS is a multi-agent AI-powered compliance intelligence platform designed to help enterprises understand, interpret, and comply with complex regulations — without requiring large legal teams or expensive consulting engagements.
+> **AI Regulatory Intelligence & Reporting Assurance System**  
+> FastAPI + LangChain + ChromaDB — Production-Ready RAG Backend
 
-It enables organizations to upload regulatory documents such as the DPDP Act, SEBI circulars, RBI guidelines, GDPR policies, and more, then instantly interact with them using AI-driven analysis, policy gap detection, and compliance guidance generation.
+[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green)](https://fastapi.tiangolo.com)
+[![Docker](https://img.shields.io/badge/Docker-ready-blue)](https://docker.com)
 
-Built with a regulation-agnostic architecture, ARIRAS transforms static legal documents into actionable compliance intelligence.
+---
 
-Why ARIRAS Exists
-The Compliance Problem
-Indian Context
+## What's New in Day 2
 
-Regulatory compliance in India is becoming increasingly difficult for enterprises, especially MSMEs and mid-sized organizations.
+| Feature | Status |
+|---|---|
+| JWT Authentication (Bearer token) | ✅ |
+| Request/Response Logging Middleware | ✅ |
+| Rate Limiting (SlowAPI) | ✅ |
+| Async endpoints (LLM + DB calls) | ✅ |
+| Dockerized + Render/Railway ready | ✅ |
+| Centralised config (.env / pydantic-settings) | ✅ |
+| Modular router architecture | ✅ |
+| All Day 1 endpoints preserved | ✅ |
 
-Recent industry findings show:
+---
 
-81% of Indian enterprises have not updated their DPDP-aligned privacy policies
-83% have not started end-to-end implementation
-71% struggle to interpret regulatory requirements
-Maximum fine under the DPDP Act can reach ₹250 crore per violation
-Global Context
+## Project Structure
 
-Compliance complexity scales exponentially across jurisdictions.
-
-Modern enterprises must simultaneously manage overlapping regulations such as:
-
-GDPR
-SOX
-HIPAA
-Basel III
-AML/BSA
-RBI Guidelines
-SEBI Circulars
-
-Each framework introduces:
-
-Different terminology
-Different interpretations
-Different reporting obligations
-Different operational requirements
-
-Despite massive spending on compliance:
-
-Organizations still rely heavily on manual interpretation
-Policies remain static and reactive
-Compliance processes are fragmented and expensive
-
-The result is not just regulatory penalties — but:
-
-Delayed business decisions
-Operational inefficiencies
-Hidden enterprise risk exposure
-
-Even leading technology companies face these challenges.
-
-For example, in 2019, Google was fined €50 million under GDPR by the French regulator due to lack of transparency and invalid consent mechanisms.
-
-What ARIRAS Does
-
-Upload any regulation PDF and ARIRAS will:
-
-Read it
-Understand it
-Index it
-Enable intelligent compliance workflows
-
-Supported examples include:
-
-DPDP Act
-SEBI Circulars
-RBI Guidelines
-Companies Act
-GDPR
-SOX
-AML/BSA frameworks
-Core Features
-1. Regulation Q&A with Clause Citations
-
-Ask compliance-related questions in plain English and receive:
-
-AI-generated answers
-Exact clause references
-Source-backed explanations
-Example Questions
-“What are the breach reporting obligations?”
-“What penalties apply for non-compliance?”
-“What consent requirements exist for data collection?”
-2. Policy Gap Analysis
-
-Upload your organization’s existing policy document and ARIRAS will:
-
-Compare it against the regulation
-Detect missing obligations
-Assign severity levels
-Generate a compliance score
-Output Includes
-Compliance score (0–100%)
-Missing compliance obligations
-Severity classification
-HIGH
-MEDIUM
-LOW
-Obligations already satisfied
-3. AI Policy Guidance Builder
-
-ARIRAS asks plain-English questions about:
-
-Your business
-Your data flows
-Existing compliance posture
-
-It then generates:
-
-Tailored compliance guidance
-Sample clauses
-Recommended policy structures
-Priority action items
-Exportable Deliverables
-Excel compliance guidance report
-Readiness score
-Regulation references
-4. Compliance Dashboard
-
-Real-time compliance intelligence dashboard with:
-
-Compliance score tracking
-Severity breakdowns
-Gap trend analysis
-Regulation coverage metrics
-Exportable reports
-5. Full Audit Trail
-
-Every AI action is logged for regulatory traceability.
-
-Includes:
-
-Document indexing logs
-Query history
-Agent activity
-Generated outputs
-Timestamped audit records
-
-Exportable as JSON.
-
-Demo Flow
-Feature 1
-→ Upload DPDP Act / SEBI Circular PDF
-→ Process & Index (~30 seconds)
-→ Ask:
-   "What are our reporting obligations?"
-→ Receive AI answer with clause citations
-
-Feature 2
-→ Upload company policy
-→ Run gap analysis
-→ Get compliance score + identified gaps
-
-Feature 3
-→ Answer business-related questions
-→ Generate downloadable policy guidance report
-
-Feature 4
-→ Open dashboard
-→ Export compliance reports and audit logs
-Technology Stack
-Component	Technology
-Frontend	Streamlit
-LLM	Groq — Llama 3.3 70B Versatile
-Orchestration	LangChain
-Vector Database	ChromaDB
-Embeddings	HuggingFace all-MiniLM-L6-v2
-PDF Parsing	PyPDF
-Excel Export	openpyxl
-Environment	Python 3.10+
-Cost Model
-
-ARIRAS is designed for extremely low operational cost.
-
-Runs locally
-No paid vector database
-No cloud GPU dependency
-Only external dependency is Groq API (free tier available)
-System Architecture
-┌─────────────────────────────────────────────────────────┐
-│                     STREAMLIT UI                       │
-│  Tab 1: Q&A   │  Tab 2: Gap Detector │ Tab 3: Builder │
-└───────────────────────┬─────────────────────────────────┘
-                        │
-┌───────────────────────▼─────────────────────────────────┐
-│              LANGCHAIN ORCHESTRATION                   │
-│     Agent Routing · Error Handling · Logging           │
-└──────┬─────────────────┬──────────────────┬─────────────┘
-       │                 │                  │
-
-┌──────▼──────┐   ┌──────▼──────┐   ┌──────▼──────────┐
-│  RAG Agent  │   │ Gap Detector│   │ Policy Builder  │
-│ rag_agent   │   │gap_detector │   │policy_builder   │
-└──────┬──────┘   └──────┬──────┘   └──────┬──────────┘
-       │                 │                  │
-
-┌──────▼─────────────────▼──────────────────▼──────────┐
-│               RAG INTELLIGENCE LAYER                │
-│ ChromaDB ↔ HuggingFace Embeddings ↔ PyPDF           │
-│ Regulation PDFs vectorized and indexed here         │
-└──────────────────────────┬───────────────────────────┘
-                           │
-
-┌──────────────────────────▼───────────────────────────┐
-│               Groq — Llama 3.3 70B                  │
-│                 LLM Inference Layer                 │
-└──────────────────────────┬───────────────────────────┘
-                           │
-
-┌──────────────────────────▼───────────────────────────┐
-│                    AUDIT TRAIL                      │
-│ Every action logged and exportable as JSON          │
-└──────────────────────────────────────────────────────┘
-Project Structure
-ariras/
+```
+project/
+├── app/
+│   ├── main.py              ← FastAPI app, middleware setup, router registration
+│   ├── config.py            ← All settings from .env (pydantic-settings)
+│   │
+│   ├── routes/
+│   │   ├── auth.py          ← POST /auth/token
+│   │   ├── general.py       ← GET /, GET /health
+│   │   ├── regulation.py    ← POST /regulation/upload
+│   │   ├── query.py         ← POST /query
+│   │   ├── gap_analysis.py  ← POST /gap-analysis, /gap-analysis/export
+│   │   ├── policy_guidance.py ← POST /policy-guidance, /policy-guidance/export
+│   │   └── conflict_check.py ← POST /conflict-check
+│   │
+│   ├── middleware/
+│   │   ├── logging_middleware.py  ← request/response timing + status logs
+│   │   └── rate_limiter.py        ← SlowAPI limiter instance
+│   │
+│   ├── models/
+│   │   └── schemas.py       ← All Pydantic request/response models
+│   │
+│   └── utils/
+│       ├── auth.py          ← JWT create / verify / FastAPI dependency
+│       └── helpers.py       ← chroma_is_ready(), require_vectorstore(), FileAdapter
 │
-├── app.py                       # Main Streamlit application
+├── agents/                  ← Your existing RAG agents (UNTOUCHED)
+├── core/                    ← Your existing vectorstore + edge handler (UNTOUCHED)
 │
-├── agents/
-│   ├── __init__.py
-│   ├── rag_agent.py             # RAG Q&A with clause citations
-│   ├── gap_detector.py          # Policy vs regulation analysis
-│   ├── policy_builder.py        # Guidance generation + Excel export
-│   └── breach_agent.py          # Breach simulation workflows
-│
-├── core/
-│   ├── __init__.py
-│   └── vectorstore.py           # ChromaDB + embedding pipeline
-│
-├── data/
-│   └── uploads/                 # Uploaded regulation PDFs
-│
+├── Dockerfile
+├── .dockerignore
 ├── requirements.txt
-├── .env
+├── .env.example
 └── README.md
-Setup & Installation
-Prerequisites
-Python 3.10+
-Groq API Key
-Available from: Groq
-1. Clone Repository
-git clone https://github.com/YOUR_USERNAME/ariras.git
+```
 
-cd ariras
-2. Install Dependencies
+---
+
+## Quick Start
+
+### 1. Local Development
+
+```bash
+# Clone & set up
+cp .env.example .env
+# Fill in your GROQ_API_KEY in .env
+
 pip install -r requirements.txt
 
-Note: The first installation downloads the HuggingFace embedding model (~80MB).
+# Run
+uvicorn app.main:app --reload --port 10000
+```
 
-3. Configure Environment Variables
-Windows
-copy .env.example .env
-macOS / Linux
-cp .env.example .env
+Open **http://localhost:10000/docs** for Swagger UI.
 
-Add the following:
+### 2. Docker
 
-GROQ_API_KEY=gsk_your_groq_key_here
-CHROMA_PERSIST_DIR=./data/chroma_db
-4. Create Required Folders
-Windows
-mkdir data\uploads
+```bash
+# Build
+docker build -t ariras-api .
 
-type nul > agents\__init__.py
-type nul > core\__init__.py
-macOS / Linux
-mkdir -p data/uploads
+# Run (reads .env for secrets)
+docker run -p 10000:10000 --env-file .env ariras-api
 
-touch agents/__init__.py
-touch core/__init__.py
-5. Run the Application
-streamlit run app.py
+# With persistent data volumes (recommended)
+docker run -p 10000:10000 \
+  --env-file .env \
+  -v $(pwd)/data:/app/data \
+  ariras-api
+```
 
-Open in browser:
+---
 
-http://localhost:8501
-How to Use
-Tab 1 — Regulation Q&A
-Upload a regulation PDF
-Click Process & Index
-Ask compliance questions in plain English
-Receive answers with clause citations
-Tab 2 — Policy Gap Detector
-Upload and index a regulation
-Upload your company policy
-Run gap analysis
-Review compliance score and missing obligations
-Tab 3 — Policy Builder
+## Authentication Flow
 
-Answer business-context questions regarding:
+All endpoints except `/`, `/health`, and `POST /auth/token` require a JWT.
 
-Business operations
-Information flows
-Compliance concerns
+```
+POST /auth/token
+  Body: { "username": "ariras_user", "password": "ariras_pass" }
+  Returns: { "access_token": "eyJ...", "token_type": "bearer", "expires_in": 3600 }
+```
 
-ARIRAS generates:
+**In Swagger UI:**
+1. Call `POST /auth/token`
+2. Copy the `access_token` value
+3. Click **Authorize 🔒** (top of page)
+4. Paste the token → click Authorize
 
-Tailored compliance guidance
-Sample clauses
-Actionable recommendations
-Downloadable Excel report
-Dashboard & Reporting
+**In curl / Postman:**
+```bash
+# Get token
+TOKEN=$(curl -s -X POST http://localhost:10000/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{"username":"ariras_user","password":"ariras_pass"}' \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
 
-The dashboard includes:
+# Use token
+curl -X POST http://localhost:10000/query \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What are the breach notification obligations?"}'
+```
 
-Compliance score gauge
-Severity distribution charts
-Top violated obligations
-Trend analysis
-Regulation coverage tracking
+---
 
-Reports exportable as JSON.
+## Endpoints
 
-Audit Trail
+| Method | Path | Auth | Rate Limit | Description |
+|--------|------|------|------------|-------------|
+| GET | `/` | ❌ | 30/min | Welcome + API info |
+| GET | `/health` | ❌ | 30/min | System health check |
+| POST | `/auth/token` | ❌ | 30/min | Login → get JWT |
+| POST | `/regulation/upload` | ✅ | 10/min | Upload & index regulation PDF |
+| POST | `/query` | ✅ | 5/min | RAG Q&A against regulation |
+| POST | `/gap-analysis` | ✅ | 5/min | Gap analysis (JSON) |
+| POST | `/gap-analysis/export` | ✅ | 5/min | Gap analysis (Excel) |
+| POST | `/policy-guidance` | ✅ | 5/min | Policy guidance (JSON) |
+| POST | `/policy-guidance/export` | ✅ | 5/min | Policy guidance (Excel) |
+| POST | `/conflict-check` | ✅ | 5/min | Regulation conflict detection |
 
-Every system interaction is logged:
+---
 
-Uploaded documents
-Agent executions
-Compliance queries
-Generated outputs
+## Logging
 
-Exportable for regulatory traceability.
+Every request logs in a clean, structured format:
 
-Supported Regulations
+```
+INFO  - 2024-01-15 14:32:01 - → POST /query  [client=127.0.0.1]
+INFO  - 2024-01-15 14:32:03 - ✓ POST /query  - 200 - 1.42s
+INFO  - 2024-01-15 14:32:05 - → POST /regulation/upload  [client=127.0.0.1]
+INFO  - 2024-01-15 14:32:08 - ✓ POST /regulation/upload  - 200 - 3.87s
+WARN  - 2024-01-15 14:32:10 - ⚠ POST /query  - 429 - 0.01s
+ERROR - 2024-01-15 14:32:12 - ✗ POST /gap-analysis  - 500 - 0.12s
+```
 
-ARIRAS is fully regulation-agnostic.
+Logs are also available via the `X-Response-Time` header on every response.
 
-Tested with:
+---
 
-Regulation	Region	Domain
-DPDP Act 2023	India	Data Protection
-SEBI Circulars	India	Capital Markets
-RBI Guidelines	India	Banking / Fintech
-Companies Act 2013	India	Corporate Governance
-GDPR	European Union	Data Protection
-SOX	United States	Financial Reporting
-AML / BSA	United States	Anti-Money Laundering
-Key Capabilities
-Feature	Description
-Regulation-Agnostic RAG	Works with any uploaded regulation PDF
-Clause-Level Citations	Every answer references exact regulation clauses
-Policy Gap Analysis	Detects missing obligations automatically
-AI Compliance Guidance	Generates practical compliance recommendations
-Excel Report Export	Downloadable policy guidance and action plans
-Full Audit Trail	Every AI decision logged
-Zero Hardcoded Rules	Intelligence derived directly from uploaded regulations
-India-First Design	Optimized for Indian regulatory ecosystems
-Environment Variables
-Variable	Description	Required
-GROQ_API_KEY	Groq API key	Yes
-CHROMA_PERSIST_DIR	Local ChromaDB storage path	Optional
-Requirements
-streamlit>=1.32.0
-langchain>=0.1.16
-langchain-community>=0.0.36
-langchain-chroma>=0.1.0
-langchain-groq>=0.1.6
-langchain-huggingface>=0.0.3
-groq>=0.9.0
-chromadb>=0.4.24
-pypdf>=4.2.0
-pdfplumber>=0.11.0
-python-dotenv>=1.0.1
-sentence-transformers>=3.0.0
-plotly>=5.20.0
-openpyxl>=3.1.2
-tiktoken>=0.7.0
-Impact Model
-Metric	Estimate
-Target Market	6.3 crore MSMEs + 1,400+ listed Indian companies
-SME Compliance Consulting Cost	₹2–80 lakh per engagement
-Enterprise Compliance Consulting Cost	₹80 lakh+ per engagement
-ARIRAS Build Cost	~₹5,000/hour development cost
-Typical Build Time	~50 hours
-Time to First Compliance Insight	Under 60 seconds
-Built With
-Streamlit — Frontend framework
-LangChain — Agent orchestration
-Groq — LLM inference
-Chroma — Vector database
-Hugging Face — Embeddings
-Plotly — Analytics dashboard
-openpyxl — Excel generation
+## Rate Limiting
+
+Responses include standard rate-limit headers:
+
+```
+X-RateLimit-Limit: 5
+X-RateLimit-Remaining: 4
+X-RateLimit-Reset: 1705330323
+```
+
+When exceeded, returns HTTP 429:
+```json
+{ "error": "Rate limit exceeded: 5 per 1 minute" }
+```
+
+---
+
+## Architecture — Request Lifecycle
+
+```
+Client Request
+      │
+      ▼
+SlowAPIMiddleware          ← Check rate limit (reject with 429 if exceeded)
+      │
+      ▼
+LoggingMiddleware          ← Log "→ POST /query [client=x.x.x.x]"
+      │                       Start timer
+      ▼
+FastAPI Router             ← Route matching
+      │
+      ▼
+Depends(get_current_user)  ← Decode JWT → extract username
+      │                       Raise 401 if invalid/missing
+      ▼
+Route Handler (async)      ← Business logic
+      │
+      │  asyncio.to_thread()
+      ├──────────────────→  LLM call (Groq API)     ← in thread pool
+      │                     ChromaDB query           ← in thread pool
+      │◄─────────────────── results
+      │
+      ▼
+LoggingMiddleware          ← Log "✓ POST /query - 200 - 1.42s"
+      │                       Add X-Response-Time header
+      ▼
+Client Response
+```
+
+---
+
+## Async Strategy
+
+| Call type | Async? | Method | Reason |
+|-----------|--------|--------|--------|
+| `await file.read()` | ✅ Yes | Native async | FastAPI UploadFile is awaitable |
+| `ask_regulation()` | ✅ Yes | `asyncio.to_thread()` | Network I/O (LLM API) — sync wrapper |
+| `detect_gaps()` | ✅ Yes | `asyncio.to_thread()` | Disk I/O + Network I/O |
+| `build_vectorstore()` | ❌ No (in thread) | `asyncio.to_thread()` | CPU-bound (embedding) — thread pool |
+| `build_excel()` | ❌ Sync is fine | Sync | Pure in-memory, <10ms |
+
+**Rule of thumb:**
+- **Network I/O** (LLM APIs, HTTP calls) → always async
+- **Disk I/O** (file reads/writes) → async where possible
+- **CPU-heavy** (embedding, tokenization) → `asyncio.to_thread()` to avoid blocking event loop
+- **In-memory** (dict ops, string ops) → sync is fine
+
+---
+
+## Deployment
+
+### Render
+
+1. Push code to GitHub
+2. New Web Service → connect repo
+3. **Build Command:** `pip install -r requirements.txt`
+4. **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+5. Add environment variables from `.env.example` in the Render dashboard
+
+### Railway
+
+1. Push code to GitHub
+2. New Project → Deploy from GitHub repo
+3. Railway auto-detects the `Dockerfile`
+4. Add environment variables in the Railway dashboard
+
+### Environment Variables for Production
+
+```bash
+ENVIRONMENT=production
+JWT_SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_hex(32))">
+GROQ_API_KEY=<your key>
+DEMO_USERNAME=<real username>
+DEMO_PASSWORD=<real password>
+```
+
+---
+
+## Security Notes for Production
+
+1. **Rotate the JWT secret** — generate with `secrets.token_hex(32)`
+2. **Replace demo credentials** — wire up a real user database
+3. **Hash passwords with bcrypt** — `passlib[bcrypt]` is already in requirements.txt
+4. **Add CORS** — use `fastapi.middleware.cors.CORSMiddleware` if browser clients connect
+5. **Use Redis for rate limiting** — swap `get_remote_address` for Redis storage at scale
+6. **Move embeddings to a worker** — ChromaDB + embedding is CPU-heavy; use Celery at scale
+
+---
+
+*Built by Team Token Burners — Day 2 Production Upgrade*
