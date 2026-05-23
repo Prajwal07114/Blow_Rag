@@ -75,7 +75,6 @@ COPY core/      ./core/
 
 # Create persistent data directories
 # These will be overridden by volume mounts or cloud storage in production
-RUN mkdir -p data/uploads data/chroma_db
 
 # Non-root user — security best practice
 RUN useradd --no-create-home --shell /bin/false ariras && \
