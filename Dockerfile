@@ -18,6 +18,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # ── Stage 1: dependency builder ───────────────────────────────────────────────
+# cache-bust: 1
 FROM python:3.11-slim AS builder
 
 # Don't write .pyc files; don't buffer stdout/stderr
