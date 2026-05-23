@@ -10,3 +10,6 @@ build/
 
 venv/
 .git/
+
+!data/uploads/.gitkeep
+!data/chroma_db/.gitkeep
