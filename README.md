@@ -1,278 +1,398 @@
-# ARIRAS API — Day 2: Production Upgrade
+# 🛡️ EventTrust — Event Authenticity & Post-Payment Trust System
 
-> **AI Regulatory Intelligence & Reporting Assurance System**  
-> FastAPI + LangChain + ChromaDB — Production-Ready RAG Backend
-
-[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green)](https://fastapi.tiangolo.com)
-[![Docker](https://img.shields.io/badge/Docker-ready-blue)](https://docker.com)
+A production-ready full-stack platform for hosting and booking events with built-in fraud prevention, KYC verification, escrow payments, and a dynamic trust scoring engine.
 
 ---
 
-## What's New in Day 2
-
-| Feature | Status |
-|---|---|
-| JWT Authentication (Bearer token) | ✅ |
-| Request/Response Logging Middleware | ✅ |
-| Rate Limiting (SlowAPI) | ✅ |
-| Async endpoints (LLM + DB calls) | ✅ |
-| Dockerized + Render/Railway ready | ✅ |
-| Centralised config (.env / pydantic-settings) | ✅ |
-| Modular router architecture | ✅ |
-| All Day 1 endpoints preserved | ✅ |
-
----
-
-## Project Structure
+## 🏗️ Architecture Overview
 
 ```
-project/
-├── app/
-│   ├── main.py              ← FastAPI app, middleware setup, router registration
-│   ├── config.py            ← All settings from .env (pydantic-settings)
-│   │
-│   ├── routes/
-│   │   ├── auth.py          ← POST /auth/token
-│   │   ├── general.py       ← GET /, GET /health
-│   │   ├── regulation.py    ← POST /regulation/upload
-│   │   ├── query.py         ← POST /query
-│   │   ├── gap_analysis.py  ← POST /gap-analysis, /gap-analysis/export
-│   │   ├── policy_guidance.py ← POST /policy-guidance, /policy-guidance/export
-│   │   └── conflict_check.py ← POST /conflict-check
-│   │
-│   ├── middleware/
-│   │   ├── logging_middleware.py  ← request/response timing + status logs
-│   │   └── rate_limiter.py        ← SlowAPI limiter instance
-│   │
-│   ├── models/
-│   │   └── schemas.py       ← All Pydantic request/response models
-│   │
-│   └── utils/
-│       ├── auth.py          ← JWT create / verify / FastAPI dependency
-│       └── helpers.py       ← chroma_is_ready(), require_vectorstore(), FileAdapter
+eventrust/
+├── backend/                    # Node.js + Express + MongoDB
+│   ├── server.js               # Entry point
+│   ├── src/
+│   │   ├── config/
+│   │   │   └── database.js     # MongoDB connection
+│   │   ├── middleware/
+│   │   │   ├── auth.js         # JWT protect/authorize/requireKYC
+│   │   │   ├── validation.js   # express-validator rules
+│   │   │   └── errorHandler.js # Global error handler + asyncHandler
+│   │   ├── models/
+│   │   │   ├── User.js         # KYC docs, trust score, badges
+│   │   │   ├── Event.js        # Trust factors, approval workflow
+│   │   │   ├── Booking.js      # Escrow ref, refund tracking
+│   │   │   ├── Escrow.js       # Transaction history, release conditions
+│   │   │   └── FraudReport.js  # Investigation workflow, severity
+│   │   ├── controllers/
+│   │   │   ├── authController.js
+│   │   │   ├── userController.js   # KYC submission
+│   │   │   ├── eventController.js  # Create, approve, cancel, complete
+│   │   │   ├── bookingController.js # Book, refund, rate
+│   │   │   ├── escrowController.js  # Hold, release, freeze
+│   │   │   ├── fraudController.js   # Report, investigate, resolve
+│   │   │   └── adminController.js   # KYC review, event moderation
+│   │   ├── routes/             # Express routers (6 modules)
+│   │   ├── services/
+│   │   │   ├── trustScoreService.js # 100-pt algorithm for users & events
+│   │   │   └── escrowService.js     # Deposit, release, refund, freeze
+│   │   └── seeds/
+│   │       └── seedData.js     # 6 users, 5 events, 3 bookings, 2 escrows
 │
-├── agents/                  ← Your existing RAG agents (UNTOUCHED)
-├── core/                    ← Your existing vectorstore + edge handler (UNTOUCHED)
-│
-├── Dockerfile
-├── .dockerignore
-├── requirements.txt
-├── .env.example
-└── README.md
+└── frontend/                   # React 18 + Tailwind CSS
+    └── src/
+        ├── pages/
+        │   ├── Login.jsx           # Demo accounts, split layout
+        │   ├── Register.jsx        # Role selector (attendee/organizer)
+        │   ├── Dashboard.jsx       # Trust gauge, escrow overview, stats
+        │   ├── Events.jsx          # Filter by trust score, category, search
+        │   ├── EventDetails.jsx    # Full trust analysis, fraud reporting
+        │   ├── CreateEvent.jsx     # 4-step wizard with auto-approval logic
+        │   ├── BookingFlow.jsx     # 3-step checkout with escrow info
+        │   ├── MyBookings.jsx      # Refund requests, payment status
+        │   ├── KYCUpload.jsx       # Document selection, trust impact preview
+        │   └── AdminDashboard.jsx  # KYC review, event moderation
+        ├── components/
+        │   ├── TrustScore.jsx      # Gauge, Bar, Breakdown, Badge variants
+        │   ├── VerificationBadge.jsx # Badges, KYC status pill
+        │   ├── EventCard.jsx       # Trust tier glow, escrow badge
+        │   └── Navbar.jsx          # Trust score in profile dropdown
+        ├── context/
+        │   └── AuthContext.jsx     # JWT management, role checks
+        └── services/
+            └── api.js              # Axios client, all API calls grouped
 ```
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
-### 1. Local Development
+### Prerequisites
+- Node.js 18+
+- MongoDB 6+ (local or Atlas)
+- npm or yarn
+
+### 1. Clone & Install
 
 ```bash
-# Clone & set up
+# Backend
+cd eventrust/backend
+npm install
+
+# Frontend
+cd ../frontend
+npm install
+```
+
+### 2. Configure Environment
+
+```bash
+cd backend
 cp .env.example .env
-# Fill in your GROQ_API_KEY in .env
-
-pip install -r requirements.txt
-
-# Run
-uvicorn app.main:app --reload --port 10000
+# Edit .env — set MONGODB_URI and JWT_SECRET
 ```
 
-Open **http://localhost:10000/docs** for Swagger UI.
+Minimum `.env`:
+```
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/eventrust
+JWT_SECRET=change_this_to_a_random_32_char_secret_key
+NODE_ENV=development
+```
 
-### 2. Docker
+### 3. Seed Demo Data
 
 ```bash
-# Build
-docker build -t ariras-api .
-
-# Run (reads .env for secrets)
-docker run -p 10000:10000 --env-file .env ariras-api
-
-# With persistent data volumes (recommended)
-docker run -p 10000:10000 \
-  --env-file .env \
-  -v $(pwd)/data:/app/data \
-  ariras-api
+cd backend
+npm run seed
 ```
 
----
-
-## Authentication Flow
-
-All endpoints except `/`, `/health`, and `POST /auth/token` require a JWT.
-
+Output:
 ```
-POST /auth/token
-  Body: { "username": "ariras_user", "password": "ariras_pass" }
-  Returns: { "access_token": "eyJ...", "token_type": "bearer", "expires_in": 3600 }
+✅ MongoDB connected for seeding
+🗑️  Cleared existing data
+👥 Users seeded
+🎪 Events seeded
+🎟️  Bookings seeded
+
+🌱 Seed complete! Test accounts:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+👑 Admin:     admin@eventrust.com      / Password123
+🏢 Organizer: sarah@techevents.io      / Password123  (Trust: 87, Elite)
+🎵 Organizer: marcus@creativeevents.co / Password123  (Trust: 64, Trusted)
+📚 Organizer: priya@workshops.in       / Password123  (Trust: 22, KYC Pending)
+🎫 Attendee:  james@example.com        / Password123
+🎫 Attendee:  aisha@example.com        / Password123
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**In Swagger UI:**
-1. Call `POST /auth/token`
-2. Copy the `access_token` value
-3. Click **Authorize 🔒** (top of page)
-4. Paste the token → click Authorize
+### 4. Run the App
 
-**In curl / Postman:**
+**Terminal 1 – Backend:**
 ```bash
-# Get token
-TOKEN=$(curl -s -X POST http://localhost:10000/auth/token \
-  -H "Content-Type: application/json" \
-  -d '{"username":"ariras_user","password":"ariras_pass"}' \
-  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
-
-# Use token
-curl -X POST http://localhost:10000/query \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"question": "What are the breach notification obligations?"}'
+cd backend
+npm run dev    # nodemon, auto-restart
+# Server runs on http://localhost:5000
 ```
 
----
-
-## Endpoints
-
-| Method | Path | Auth | Rate Limit | Description |
-|--------|------|------|------------|-------------|
-| GET | `/` | ❌ | 30/min | Welcome + API info |
-| GET | `/health` | ❌ | 30/min | System health check |
-| POST | `/auth/token` | ❌ | 30/min | Login → get JWT |
-| POST | `/regulation/upload` | ✅ | 10/min | Upload & index regulation PDF |
-| POST | `/query` | ✅ | 5/min | RAG Q&A against regulation |
-| POST | `/gap-analysis` | ✅ | 5/min | Gap analysis (JSON) |
-| POST | `/gap-analysis/export` | ✅ | 5/min | Gap analysis (Excel) |
-| POST | `/policy-guidance` | ✅ | 5/min | Policy guidance (JSON) |
-| POST | `/policy-guidance/export` | ✅ | 5/min | Policy guidance (Excel) |
-| POST | `/conflict-check` | ✅ | 5/min | Regulation conflict detection |
-
----
-
-## Logging
-
-Every request logs in a clean, structured format:
-
-```
-INFO  - 2024-01-15 14:32:01 - → POST /query  [client=127.0.0.1]
-INFO  - 2024-01-15 14:32:03 - ✓ POST /query  - 200 - 1.42s
-INFO  - 2024-01-15 14:32:05 - → POST /regulation/upload  [client=127.0.0.1]
-INFO  - 2024-01-15 14:32:08 - ✓ POST /regulation/upload  - 200 - 3.87s
-WARN  - 2024-01-15 14:32:10 - ⚠ POST /query  - 429 - 0.01s
-ERROR - 2024-01-15 14:32:12 - ✗ POST /gap-analysis  - 500 - 0.12s
-```
-
-Logs are also available via the `X-Response-Time` header on every response.
-
----
-
-## Rate Limiting
-
-Responses include standard rate-limit headers:
-
-```
-X-RateLimit-Limit: 5
-X-RateLimit-Remaining: 4
-X-RateLimit-Reset: 1705330323
-```
-
-When exceeded, returns HTTP 429:
-```json
-{ "error": "Rate limit exceeded: 5 per 1 minute" }
-```
-
----
-
-## Architecture — Request Lifecycle
-
-```
-Client Request
-      │
-      ▼
-SlowAPIMiddleware          ← Check rate limit (reject with 429 if exceeded)
-      │
-      ▼
-LoggingMiddleware          ← Log "→ POST /query [client=x.x.x.x]"
-      │                       Start timer
-      ▼
-FastAPI Router             ← Route matching
-      │
-      ▼
-Depends(get_current_user)  ← Decode JWT → extract username
-      │                       Raise 401 if invalid/missing
-      ▼
-Route Handler (async)      ← Business logic
-      │
-      │  asyncio.to_thread()
-      ├──────────────────→  LLM call (Groq API)     ← in thread pool
-      │                     ChromaDB query           ← in thread pool
-      │◄─────────────────── results
-      │
-      ▼
-LoggingMiddleware          ← Log "✓ POST /query - 200 - 1.42s"
-      │                       Add X-Response-Time header
-      ▼
-Client Response
-```
-
----
-
-## Async Strategy
-
-| Call type | Async? | Method | Reason |
-|-----------|--------|--------|--------|
-| `await file.read()` | ✅ Yes | Native async | FastAPI UploadFile is awaitable |
-| `ask_regulation()` | ✅ Yes | `asyncio.to_thread()` | Network I/O (LLM API) — sync wrapper |
-| `detect_gaps()` | ✅ Yes | `asyncio.to_thread()` | Disk I/O + Network I/O |
-| `build_vectorstore()` | ❌ No (in thread) | `asyncio.to_thread()` | CPU-bound (embedding) — thread pool |
-| `build_excel()` | ❌ Sync is fine | Sync | Pure in-memory, <10ms |
-
-**Rule of thumb:**
-- **Network I/O** (LLM APIs, HTTP calls) → always async
-- **Disk I/O** (file reads/writes) → async where possible
-- **CPU-heavy** (embedding, tokenization) → `asyncio.to_thread()` to avoid blocking event loop
-- **In-memory** (dict ops, string ops) → sync is fine
-
----
-
-## Deployment
-
-### Render
-
-1. Push code to GitHub
-2. New Web Service → connect repo
-3. **Build Command:** `pip install -r requirements.txt`
-4. **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-5. Add environment variables from `.env.example` in the Render dashboard
-
-### Railway
-
-1. Push code to GitHub
-2. New Project → Deploy from GitHub repo
-3. Railway auto-detects the `Dockerfile`
-4. Add environment variables in the Railway dashboard
-
-### Environment Variables for Production
-
+**Terminal 2 – Frontend:**
 ```bash
-ENVIRONMENT=production
-JWT_SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_hex(32))">
-GROQ_API_KEY=<your key>
-DEMO_USERNAME=<real username>
-DEMO_PASSWORD=<real password>
+cd frontend
+npm start      # CRA dev server with hot reload
+# App runs on http://localhost:3000
 ```
 
 ---
 
-## Security Notes for Production
+## 📡 Complete API Reference
 
-1. **Rotate the JWT secret** — generate with `secrets.token_hex(32)`
-2. **Replace demo credentials** — wire up a real user database
-3. **Hash passwords with bcrypt** — `passlib[bcrypt]` is already in requirements.txt
-4. **Add CORS** — use `fastapi.middleware.cors.CORSMiddleware` if browser clients connect
-5. **Use Redis for rate limiting** — swap `get_remote_address` for Redis storage at scale
-6. **Move embeddings to a worker** — ChromaDB + embedding is CPU-heavy; use Celery at scale
+### Auth
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| POST | `/api/auth/register` | Public | Register new user |
+| POST | `/api/auth/login` | Public | Login, returns JWT |
+| GET | `/api/auth/me` | Private | Get current user |
+| POST | `/api/auth/refresh` | Private | Refresh JWT token |
+| PUT | `/api/auth/password` | Private | Change password |
+
+### Users
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| GET | `/api/users` | Admin | List all users (paginated) |
+| GET | `/api/users/:id` | Public | Get user public profile |
+| PUT | `/api/users/profile` | Private | Update own profile |
+| POST | `/api/users/kyc` | Private | Submit KYC documents |
+| GET | `/api/users/:id/trust-score` | Public | Get trust score breakdown |
+| PUT | `/api/users/:id/suspend` | Admin | Suspend/unsuspend user |
+
+### Events
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| GET | `/api/events` | Public | List approved events (filter/search/sort) |
+| GET | `/api/events/:id` | Public | Get event details |
+| POST | `/api/events` | Organizer | Create event (triggers trust scoring + approval) |
+| PUT | `/api/events/:id` | Organizer | Update event |
+| GET | `/api/events/my-events` | Organizer | Get own events |
+| POST | `/api/events/:id/cancel` | Organizer/Admin | Cancel + auto-refund all |
+| POST | `/api/events/:id/complete` | Organizer/Admin | Mark complete + trigger escrow release |
+
+### Bookings
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| POST | `/api/bookings` | Private | Create booking + escrow deposit |
+| GET | `/api/bookings/my-bookings` | Private | Get own bookings |
+| GET | `/api/bookings/:id` | Private | Get booking details |
+| POST | `/api/bookings/:id/refund` | Attendee | Request refund (policy-aware) |
+| POST | `/api/bookings/:id/cancel` | Attendee | Cancel booking |
+| POST | `/api/bookings/:id/rate` | Attendee | Submit rating 1-5 |
+
+### Escrow
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| GET | `/api/escrow` | Admin | List all escrows with summary |
+| GET | `/api/escrow/my-escrows` | Organizer | Own escrow accounts |
+| GET | `/api/escrow/event/:eventId` | Organizer/Admin | Event escrow details |
+| POST | `/api/escrow/:id/release` | Admin | Force-release or auto-release escrow |
+
+### Fraud Reports
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| POST | `/api/fraud` | Private | Submit fraud report (auto-freezes escrow if severe) |
+| GET | `/api/fraud` | Admin | List all reports |
+| GET | `/api/fraud/my-reports` | Private | Own submitted reports |
+| GET | `/api/fraud/:id` | Private | Get report details |
+| PUT | `/api/fraud/:id/status` | Admin | Update status / resolve |
+
+### Admin
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| GET | `/api/admin/dashboard` | Admin | Platform stats + pending queues |
+| GET | `/api/admin/kyc/pending` | Admin | KYC submissions awaiting review |
+| PUT | `/api/admin/kyc/:userId` | Admin | Approve or reject KYC |
+| GET | `/api/admin/events/pending` | Admin | Events awaiting approval |
+| PUT | `/api/admin/events/:eventId/review` | Admin | Approve or reject event |
+| POST | `/api/admin/recalculate-trust` | Admin | Recalculate all trust scores |
 
 ---
 
-*Built by Team Token Burners — Day 2 Production Upgrade*
+## 🔐 Trust Score Algorithm
+
+### User Trust Score (0–100 pts)
+| Factor | Max | Logic |
+|--------|-----|-------|
+| KYC Verification | 25 | 25=approved, 5=pending, 0=not submitted |
+| Email + Phone badges | +5 bonus | Included in KYC block |
+| Events Hosted | 20 | Log scale: 1=5pts, 3=10, 6=15, 11+=20 |
+| Completion Rate | 20 | (completed/created) × 20 |
+| Refund Rate (inverted) | 15 | <2%=15, <5%=12, <10%=8, <20%=4 |
+| Fraud Reports (inverted) | 10 | 0=10, 1=6, 2=3, 3+=0 |
+| Account Age | 5 | 365d=5, 180d=4, 90d=3, 30d=2, 7d=1 |
+| Attendee Ratings | 5 | 4.5+=5, 4.0+=4, 3.5+=3, 3.0+=2 |
+
+**Tiers:** Elite(80+) › Trusted(60+) › Verified(40+) › Basic(20+) › Unverified
+
+### Event Trust Score (0–100 pts)
+| Factor | Max | Logic |
+|--------|-----|-------|
+| Organizer Trust Score | 40 | (organizer_score/100) × 40 |
+| Description Quality | 15 | 500+ chars=8, images=4, tags=3 |
+| Refund Policy | 15 | 30d=15, 14d=13, 7d=11, 48h=8, 24h=5, none=0 |
+| Advance Notice | 10 | 30d+ ahead=10, 14d=7, 7d=5 |
+| Price Reasonableness | 10 | Free=10, <$50=9, <$100=8, <$200=7 |
+| Historical Completion | 10 | organizer_completion_rate × 10 |
+
+### Auto-Approval Criteria
+Events skip manual review if organizer has:
+- ✅ KYC approved
+- 📊 Trust score ≥ 70
+- 🎪 Event trust score ≥ 60
+- 🚫 Zero fraud reports
+- 🏁 3+ completed events
+
+---
+
+## 💰 Escrow Flow
+
+```
+Attendee Books
+     │
+     ▼
+Payment Captured ──► Escrow Account Created (per event)
+     │                        │
+     │                  5% Platform Fee deducted
+     │
+     ▼
+Event Happens
+     │
+     ▼
+Organizer marks Complete ──► Release Conditions Checked:
+     │                        ✓ Event completed
+     │                        ✓ No active fraud reports
+     │                        ✓ 48h window passed
+     │
+     ▼
+     ├── All met ──► Funds Released to Organizer
+     │
+     └── Fraud report filed ──► Escrow Frozen ──► Admin Investigation
+          │
+          ├── Fraud confirmed ──► Full Refund to All Attendees
+          └── Report dismissed ──► Normal Release Flow
+```
+
+---
+
+## 🛡️ Fraud Report Flow
+
+1. **Submission** — Any authenticated user reports an event or organizer
+2. **Auto-actions** (high/critical severity):
+   - Escrow immediately frozen
+   - Trust score penalty applied (-5 to -20 pts)
+3. **Admin investigation** — Priority queue in admin dashboard
+4. **Resolution outcomes:**
+   - `fraud_confirmed` → Full trust penalty, potential suspension, escrow refunded
+   - `false_report` → No action, mark resolved
+   - `warning_issued` → Formal warning, partial penalty
+
+---
+
+## 🎨 Frontend Pages
+
+| Route | Page | Auth |
+|-------|------|------|
+| `/` | Landing (features, trust tiers) | Public |
+| `/login` | Login with demo account shortcuts | Public only |
+| `/register` | Register as attendee or organizer | Public only |
+| `/events` | Browse with filters (trust score, category, search) | Public |
+| `/events/:id` | Full event page with trust analysis | Public |
+| `/book/:eventId` | 3-step booking (tickets → details → payment) | Auth |
+| `/dashboard` | Trust gauge, stats, escrow overview | Auth |
+| `/my-bookings` | All bookings with refund actions | Auth |
+| `/kyc` | Document submission + trust impact preview | Auth |
+| `/create-event` | 4-step event wizard with live preview | Organizer |
+| `/admin` | Moderation queues (KYC + Events) | Admin |
+
+---
+
+## 🧪 Testing Guide
+
+### Scenario 1: Complete Booking Flow
+1. Login as `james@example.com`
+2. Browse events → click "TechConf 2025"
+3. Click "Book Now" → select 1 General Admission
+4. Fill details → Review & Pay
+5. See booking confirmation with escrow protection notice
+
+### Scenario 2: Organizer Creates Event (Auto-Approval)
+1. Login as `sarah@techevents.io` (Trust: 87, Elite)
+2. Go to Create Event
+3. Fill all 4 steps
+4. Submit → should be **auto-approved** instantly
+
+### Scenario 3: KYC Review
+1. Login as `admin@eventrust.com`
+2. Go to Admin Dashboard → KYC Reviews tab
+3. Approve Priya's pending KYC
+4. Trust score updates automatically
+
+### Scenario 4: Fraud Report
+1. Login as `james@example.com`
+2. Open any event → Report button at bottom
+3. Fill report form with severity "high"
+4. Check Admin Dashboard → Open Fraud Reports
+
+### Scenario 5: Escrow Release
+1. Login as `sarah@techevents.io`
+2. Open one of her approved events
+3. Click "Mark as Completed"
+4. Login as admin → `/api/escrow` to see release status
+
+---
+
+## 🔧 Key Design Decisions
+
+- **MVC architecture** — Controllers thin, logic in Services
+- **asyncHandler wrapper** — No try-catch boilerplate in controllers
+- **Trust scores recalculated** — On every relevant action (booking, fraud, KYC change)
+- **Escrow per event** — One escrow account aggregates all booking payments
+- **Platform fee (5%)** — Deducted at time of deposit, shown transparently
+- **Refund policy engine** — Calculates full/partial/no refund based on event timing
+- **Auto-approval** — Reduces admin load for high-trust organizers
+- **JWT stateless auth** — No sessions, works across microservices
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Backend Runtime | Node.js 18 |
+| API Framework | Express 4 |
+| Database | MongoDB + Mongoose |
+| Auth | JWT (jsonwebtoken) |
+| Validation | express-validator |
+| Security | helmet, cors, express-rate-limit |
+| Frontend | React 18 |
+| Routing | React Router v6 |
+| Styling | Tailwind CSS 3 |
+| HTTP Client | Axios |
+| Notifications | react-hot-toast |
+| Date Handling | date-fns |
+| Fonts | Syne (display) + DM Sans (body) |
+
+---
+
+## 📦 Production Checklist
+
+- [ ] Set strong `JWT_SECRET` (32+ chars, random)
+- [ ] Use MongoDB Atlas with proper auth
+- [ ] Add real payment gateway (Stripe) instead of mock
+- [ ] Add real file storage (S3) for KYC uploads
+- [ ] Configure SMTP for email notifications
+- [ ] Set `NODE_ENV=production`
+- [ ] Add Redis for rate limiting at scale
+- [ ] Set up cron job for scheduled escrow releases
+- [ ] Add Sentry for error monitoring
+- [ ] Deploy backend on Railway/Render, frontend on Vercel
+
+---
+
+*Built for EventTrust Hackathon — Production-grade implementation*
