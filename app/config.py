@@ -8,7 +8,7 @@ Usage:
     from app.config import settings
     print(settings.JWT_SECRET_KEY)
 """
-
+from pathlib import Path
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -33,10 +33,11 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""                  # optional fallback
 
     # ── ChromaDB ─────────────────────────────────────────────────────────────
-    CHROMA_PERSIST_DIR: str = "./data/chroma_db"
+    CHROMA_PERSIST_DIR: str = str(Path(__file__).resolve().parent.parent / "data" / "chroma_db")
 
     # ── File storage ──────────────────────────────────────────────────────────
-    UPLOAD_DIR: str = "./data/uploads"
+    UPLOAD_DIR: str = str(Path(__file__).resolve().parent.parent / "data" / "uploads")
+
 
     # ── Rate limiting ─────────────────────────────────────────────────────────
     RATE_LIMIT_QUERY: str = "5/minute"        # LLM-backed endpoints
