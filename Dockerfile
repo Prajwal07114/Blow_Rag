@@ -79,9 +79,9 @@ RUN mkdir -p data/uploads data/chroma_db
 
 # Non-root user — security best practice
 RUN useradd --no-create-home --shell /bin/false ariras && \
+    mkdir -p data/uploads data/chroma_db && \
     chown -R ariras:ariras /app
 USER ariras
-
 # Document which port the container listens on
 EXPOSE 10000
 
