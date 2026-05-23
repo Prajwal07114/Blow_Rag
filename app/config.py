@@ -33,11 +33,10 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""                  # optional fallback
 
     # ── ChromaDB ─────────────────────────────────────────────────────────────
-    CHROMA_PERSIST_DIR: str = str(Path(__file__).resolve().parent.parent / "data" / "chroma_db")
+    CHROMA_PERSIST_DIR: str = "/app/data/chroma_db"
 
     # ── File storage ──────────────────────────────────────────────────────────
-    UPLOAD_DIR: str = str(Path(__file__).resolve().parent.parent / "data" / "uploads")
-
+    UPLOAD_DIR: str = "/app/data/uploads"
 
     # ── Rate limiting ─────────────────────────────────────────────────────────
     RATE_LIMIT_QUERY: str = "5/minute"        # LLM-backed endpoints

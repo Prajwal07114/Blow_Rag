@@ -1,7 +1,6 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_chroma import Chroma
 from dotenv import load_dotenv
@@ -18,7 +17,16 @@ except ImportError:
 
 load_dotenv()
 
-CHROMA_DIR = os.getenv("CHROMA_PERSIST_DIR", "./data/chroma_db")
+# ── Resolve paths relative to THIS file, not the working directory ──────────
+_BASE_DIR  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_DATA_DIR  = os.path.join(_BASE_DIR, "data")
+
+CHROMA_DIR  = os.getenv("CHROMA_PERSIST_DIR",  os.path.join(_DATA_DIR, "chroma_db"))
+UPLOAD_DIR  = os.getenv("UPLOAD_DIR",           os.path.join(_DATA_DIR, "uploads"))
+
+# Create directories at import time so nothing else has to worry about it
+os.makedirs(CHROMA_DIR, exist_ok=True)
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 def get_embeddings():
@@ -30,11 +38,11 @@ def get_embeddings():
 
 
 def build_vectorstore(file_path: str):
-    loader      = PyPDFLoader(file_path)
-    docs        = loader.load()
-    splitter    = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
-    chunks      = splitter.split_documents(docs)
-    embeddings  = get_embeddings()
+    loader     = PyPDFLoader(file_path)
+    docs       = loader.load()
+    splitter   = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+    chunks     = splitter.split_documents(docs)
+    embeddings = get_embeddings()
     vectorstore = Chroma.from_documents(
         documents=chunks,
         embedding=embeddings,
