@@ -57,6 +57,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PORT=10000 \
     HF_HOME=/app/.cache/huggingface \
     TRANSFORMERS_CACHE=/app/.cache/huggingface
+
 WORKDIR /app
 
 # Runtime system dependencies only (no build tools)
@@ -68,19 +69,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /opt/venv /opt/venv
 
 # Copy application source code
-# .dockerignore excludes: .env, __pycache__, data/, *.pyc, .git, etc.
 COPY app/       ./app/
 COPY agents/    ./agents/
 COPY core/      ./core/
 
-# Create persistent data directories
-# These will be overridden by volume mounts or cloud storage in production
+# Pre-download the embedding model into the image
+RUN HF_HOME=/app/.cache/huggingface \
+    python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
 # Non-root user — security best practice
 RUN useradd --no-create-home --shell /bin/false ariras && \
     mkdir -p data/uploads data/chroma_db .cache/huggingface && \
     chown -R ariras:ariras /app
 USER ariras
+
 # Document which port the container listens on
 EXPOSE 10000
 
