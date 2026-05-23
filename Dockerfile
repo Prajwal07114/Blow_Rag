@@ -53,11 +53,10 @@ FROM python:3.11-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    # Point Python at the venv from Stage 1
     PATH="/opt/venv/bin:$PATH" \
-    # Default port — override with PORT env var on Render/Railway
-    PORT=10000
-
+    PORT=10000 \
+    HF_HOME=/app/.cache/huggingface \
+    TRANSFORMERS_CACHE=/app/.cache/huggingface
 WORKDIR /app
 
 # Runtime system dependencies only (no build tools)
@@ -79,7 +78,7 @@ COPY core/      ./core/
 
 # Non-root user — security best practice
 RUN useradd --no-create-home --shell /bin/false ariras && \
-    mkdir -p data/uploads data/chroma_db && \
+    mkdir -p data/uploads data/chroma_db .cache/huggingface && \
     chown -R ariras:ariras /app
 USER ariras
 # Document which port the container listens on
