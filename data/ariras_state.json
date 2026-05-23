@@ -1,0 +1,141 @@
+{
+  "audit_log": [
+    {
+      "time": "15:16:32",
+      "action": "Regulation indexed",
+      "detail": "Policy for Determining Materiality under Regulation 30.pdf"
+    },
+    {
+      "time": "15:17:33",
+      "action": "RAG query",
+      "detail": "for which country is this regulation applicable?"
+    },
+    {
+      "time": "15:18:03",
+      "action": "RAG query",
+      "detail": "what are the reporting obligations "
+    },
+    {
+      "time": "15:19:25",
+      "action": "Policy guidance generated",
+      "detail": "Curio"
+    },
+    {
+      "time": "15:20:31",
+      "action": "Gap detection run",
+      "detail": "Policy vs Policy for Determining Materiality under Regulation 30.pdf"
+    },
+    {
+      "time": "13:26:27",
+      "action": "Regulation indexed",
+      "detail": "Policy for Determining Materiality under Regulation 30.pdf"
+    },
+    {
+      "time": "13:27:00",
+      "action": "Company profile saved",
+      "detail": "Capgemini"
+    },
+    {
+      "time": "13:27:23",
+      "action": "Policy guidance generated",
+      "detail": "Capgemini"
+    },
+    {
+      "time": "13:28:18",
+      "action": "Gap detection run",
+      "detail": "Policy vs Policy for Determining Materiality under Regulation 30.pdf"
+    },
+    {
+      "time": "24 Mar 2026  18:13:49",
+      "action": "Regulation indexed",
+      "detail": "DPDP Act.pdf"
+    },
+    {
+      "time": "24 Mar 2026  18:15:02",
+      "action": "RAG query",
+      "detail": "What will happen if there is non compliance"
+    },
+    {
+      "time": "24 Mar 2026  18:20:03",
+      "action": "Company profile uploaded",
+      "detail": "About Paytm.pdf"
+    },
+    {
+      "time": "24 Mar 2026  18:20:50",
+      "action": "Company profile saved",
+      "detail": "Paytm"
+    },
+    {
+      "time": "24 Mar 2026  18:21:43",
+      "action": "Policy guidance generated",
+      "detail": "Paytm"
+    },
+    {
+      "time": "24 Mar 2026  18:23:08",
+      "action": "Gap detection run",
+      "detail": "Policy vs DPDP Act.pdf"
+    },
+    {
+      "time": "24 Mar 2026  21:55:06",
+      "action": "Regulation indexed",
+      "detail": "DPDP Act.pdf"
+    },
+    {
+      "time": "24 Mar 2026  21:56:27",
+      "action": "RAG query",
+      "detail": "What is DPDP most difficult compliance requirement."
+    },
+    {
+      "time": "24 Mar 2026  21:57:44",
+      "action": "Company profile uploaded",
+      "detail": "About Paytm.pdf"
+    },
+    {
+      "time": "24 Mar 2026  21:57:55",
+      "action": "Company profile saved",
+      "detail": "Paytm"
+    },
+    {
+      "time": "24 Mar 2026  21:58:37",
+      "action": "Policy guidance generated",
+      "detail": "Paytm"
+    },
+    {
+      "time": "24 Mar 2026  22:00:02",
+      "action": "Gap detection run",
+      "detail": "Policy vs DPDP Act.pdf"
+    },
+    {
+      "time": "24 Mar 2026  22:00:44",
+      "action": "Gap detection run",
+      "detail": "Policy vs DPDP Act.pdf"
+    }
+  ],
+  "gap_history": [
+    {
+      "label": "Run 1",
+      "score": 0,
+      "gaps": 3
+    },
+    {
+      "label": "Run 2",
+      "score": 0,
+      "gaps": 0
+    },
+    {
+      "label": "Run 3",
+      "score": 40,
+      "gaps": 5
+    },
+    {
+      "label": "Run 4",
+      "score": 0,
+      "gaps": 0
+    },
+    {
+      "label": "Run 5",
+      "score": 40,
+      "gaps": 5
+    }
+  ]
+}
