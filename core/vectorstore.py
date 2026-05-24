@@ -26,10 +26,10 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 def get_embeddings():
     return GoogleGenerativeAIEmbeddings(
-        model="text-embedding-004",  # remove "models/" prefix
+        model="models/text-embedding-004",
         google_api_key=os.getenv("GOOGLE_API_KEY"),
+        client_options={"api_endpoint": "generativelanguage.googleapis.com"},
     )
-
 def build_vectorstore(file_path: str):
     loader      = PyPDFLoader(file_path)
     docs        = loader.load()
