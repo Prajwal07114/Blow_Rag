@@ -3,8 +3,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_chroma import Chroma
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain.embeddings.base import Embeddings
 from dotenv import load_dotenv
+from typing import List
+import google.generativeai as genai
 
 try:
     from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -13,7 +15,6 @@ except ImportError:
 
 load_dotenv()
 
-# ── Resolve paths relative to THIS file, not the working directory ──────────
 _BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _DATA_DIR = os.path.join(_BASE_DIR, "data")
 
@@ -24,12 +25,31 @@ os.makedirs(CHROMA_DIR, exist_ok=True)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
+class GeminiEmbeddings(Embeddings):
+    def __init__(self):
+        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        result = genai.embed_content(
+            model="models/text-embedding-004",
+            content=texts,
+            task_type="retrieval_document"
+        )
+        return result["embedding"]
+
+    def embed_query(self, text: str) -> List[float]:
+        result = genai.embed_content(
+            model="models/text-embedding-004",
+            content=text,
+            task_type="retrieval_query"
+        )
+        return result["embedding"]
+
+
 def get_embeddings():
-    return GoogleGenerativeAIEmbeddings(
-        model="models/text-embedding-004",
-        google_api_key=os.getenv("GOOGLE_API_KEY"),
-        client_options={"api_endpoint": "generativelanguage.googleapis.com"},
-    )
+    return GeminiEmbeddings()
+
+
 def build_vectorstore(file_path: str):
     loader      = PyPDFLoader(file_path)
     docs        = loader.load()
