@@ -6,8 +6,7 @@ from langchain_chroma import Chroma
 from langchain.embeddings.base import Embeddings
 from dotenv import load_dotenv
 from typing import List
-from google import genai
-from google.genai import types
+import requests
 
 try:
     from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -28,26 +27,23 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 class GeminiEmbeddings(Embeddings):
     def __init__(self):
-        self.client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+        self.api_key = os.getenv("GOOGLE_API_KEY")
+        self.url = f"https://generativelanguage.googleapis.com/v1/models/text-embedding-004:embedContent?key={self.api_key}"
+
+    def _embed(self, text: str, task_type: str) -> List[float]:
+        response = requests.post(self.url, json={
+            "model": "models/text-embedding-004",
+            "content": {"parts": [{"text": text}]},
+            "taskType": task_type
+        })
+        response.raise_for_status()
+        return response.json()["embedding"]["values"]
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
-        embeddings = []
-        for text in texts:
-            result = self.client.models.embed_content(
-                model="text-embedding-004",
-                contents=text,
-                config=types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT")
-            )
-            embeddings.append(result.embeddings[0].values)
-        return embeddings
+        return [self._embed(t, "RETRIEVAL_DOCUMENT") for t in texts]
 
     def embed_query(self, text: str) -> List[float]:
-        result = self.client.models.embed_content(
-            model="text-embedding-004",
-            contents=text,
-            config=types.EmbedContentConfig(task_type="RETRIEVAL_QUERY")
-        )
-        return result.embeddings[0].values
+        return self._embed(text, "RETRIEVAL_QUERY")
 
 
 def get_embeddings():
