@@ -6,7 +6,8 @@ from langchain_chroma import Chroma
 from langchain.embeddings.base import Embeddings
 from dotenv import load_dotenv
 from typing import List
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 try:
     from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -27,23 +28,23 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 class GeminiEmbeddings(Embeddings):
     def __init__(self):
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        self.client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
-        result = genai.embed_content(
-            model="models/text-embedding-004",
-            content=texts,
-            task_type="retrieval_document"
+        result = self.client.models.embed_content(
+            model="text-embedding-004",
+            contents=texts,
+            config=types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT")
         )
-        return result["embedding"]
+        return [e.values for e in result.embeddings]
 
     def embed_query(self, text: str) -> List[float]:
-        result = genai.embed_content(
-            model="models/text-embedding-004",
-            content=text,
-            task_type="retrieval_query"
+        result = self.client.models.embed_content(
+            model="text-embedding-004",
+            contents=[text],
+            config=types.EmbedContentConfig(task_type="RETRIEVAL_QUERY")
         )
-        return result["embedding"]
+        return result.embeddings[0].values
 
 
 def get_embeddings():
