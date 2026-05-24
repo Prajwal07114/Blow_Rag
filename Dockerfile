@@ -73,9 +73,7 @@ COPY app/       ./app/
 COPY agents/    ./agents/
 COPY core/      ./core/
 
-# Pre-download the embedding model into the image
-RUN HF_HOME=/app/.cache/huggingface \
-    python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('paraphrase-MiniLM-L3-v2')"
+
 
 # Non-root user — security best practice
 RUN useradd --no-create-home --shell /bin/false ariras && \
