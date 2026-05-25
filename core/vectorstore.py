@@ -28,8 +28,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 class GeminiEmbeddings(Embeddings):
     def __init__(self):
         self.api_key = os.getenv("GOOGLE_API_KEY")
-        self.url = f"https://generativelanguage.googleapis.com/v1/models/text-embedding-004:embedContent?key={self.api_key}"
-
+        self.url = f"https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key={self.api_key}"
     def _embed(self, text: str, task_type: str) -> List[float]:
         response = requests.post(self.url, json={
             "model": "models/text-embedding-004",
